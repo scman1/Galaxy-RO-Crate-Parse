@@ -1,0 +1,49 @@
+@prefix ns1: <http://purl.obolibrary.org/obo/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://purl.org/pan-science/PaNET/PaNET01082> #a owl:Class ;
+    rdfs:label "crystallography-based techniques" ;
+    #ns1:IAO_0000119 "https://en.wikipedia.org/wiki/Crystallography" ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET00400> ;
+    owl:equivalentClass [ ] ;
+    skos:altLabel "obtain crystal structure" .
+
+<http://purl.org/pan-science/PaNET/PaNET01198># a owl:Class ;
+    rdfs:label "extended x-ray absorption fine structure" ;
+    #ns1:IAO_0000119 "https://en.wikipedia.org/wiki/Extended_X-ray_absorption_fine_structure" ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET01083>,
+    #    <http://purl.org/pan-science/PaNET/PaNET01197> ;
+    owl:equivalentClass [ ] ;
+    skos:altLabel "EXAFS" .
+
+<http://purl.org/pan-science/PaNET/PaNET01199> #a owl:Class ;
+    rdfs:label "x-ray absorption near edge structure" ;
+    #ns1:IAO_0000119 "https://en.wikipedia.org/wiki/X-ray_absorption_near_edge_structure" ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET00402>,
+    #    <http://purl.org/pan-science/PaNET/PaNET01197> ;
+    owl:equivalentClass [ ] ;
+    skos:altLabel "NEXAFS",
+        "XANES" .
+
+<http://purl.org/pan-science/PaNET/PaNET2020063> #a owl:Class ;
+    rdfs:label "crystallographic study".# ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET2014000> .
+
+<http://purl.org/pan-science/PaNET/PaNET01196> #a owl:Class ;
+    rdfs:label "x-ray absorption spectroscopy" ;
+    #ns1:IAO_0000119 "https://en.wikipedia.org/wiki/X-ray_absorption_spectroscopy" ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET01054>,
+    #    <http://purl.org/pan-science/PaNET/PaNET01135>,
+    #    <http://purl.org/pan-science/PaNET/PaNET01156>,
+    #    <http://purl.org/pan-science/PaNET/PaNET01227> ;
+    owl:equivalentClass [ ] ;
+    skos:altLabel "XAS" .
+
+<http://purl.org/pan-science/PaNET/PaNET01197> #a owl:Class ;
+    rdfs:label "x-ray absorption fine structure" ;
+    #ns1:IAO_0000119 "https://en.wikipedia.org/wiki/X-ray_absorption_fine_structure" ;
+    #rdfs:subClassOf <http://purl.org/pan-science/PaNET/PaNET01196> ;
+    skos:altLabel "XAFS" .
+

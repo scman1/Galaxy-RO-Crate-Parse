@@ -1,0 +1,28 @@
+@prefix sostdp: <http://sweetontology.net/propOrdinal/ProcessingLevel/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ex: <http://example.org#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+
+
+ex:Level0 
+    skos:prefLabel "Raw"@en ;
+    dcterms:description "Reconstructed, unprocessed instrument and payload data at full resolution, with any and all communications artifacts (e.g. noise, fluorescence)"@en .
+
+
+sostdp:Level1 
+    skos:prefLabel "Processed"@en ;
+    dcterms:description "Data that has been lightly processed from raw data, such as merging, denoising, cleaning, filtering, or rebinning."@en .
+
+sostdp:Level2 
+    skos:prefLabel "Transformed"@en ;
+    dcterms:description "Data that has been transformed into a different structure or representation (normalised, flattened, cropped)."@en .
+
+sostdp:Level3
+    skos:prefLabel "Derived"@en ;
+    dcterms:description "Data derived from other datasets through calculations, modelling, aggregation, or inference (fitted)."@en .
+
+sostdp:Level4 
+    skos:prefLabel "Product"@en ;
+    dcterms:description "End-user products such as reports, visualisations, dashboards, publications, and summaries (reports, plots)."@en .
