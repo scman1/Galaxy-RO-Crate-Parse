@@ -12,7 +12,7 @@ from pyvis.network import Network
 
 # Namespaces
 PROV = Namespace("http://www.w3.org/ns/prov#")
-SCHEMA = Namespace("http://schema.org/")
+SCHEMA = Namespace("https://schema.org/")
 SKOS = Namespace("http://www.w3.org/2004/02/skos/core#")
 PPLAN = Namespace("https://vocab.linkeddata.es/p-plan#")
 CDIFPROV = Namespace("https://worldfair-project.eu/cdif/profiles/provenance/CDIF-PROV#")
@@ -439,7 +439,7 @@ def roc_provo(crate_path, out_path, output_file="galaxy_run_prov.ttl"):
             "cdifprov": str(CDIFPROV)
         }
     save_json = Path(out_path, output_file[:-4]+".jsonld")
-    g.serialize(destination=save_json, format="json-ld", 
+    g.serialize(destination=save_json, format="json-ld", publicID="local:",
                 context=graph_context, auto_compact=True, indent=2)
     return g 
 
@@ -532,7 +532,7 @@ import pandas as pd
 # present data as html table
 from IPython.display import display, HTML
 
-def get_df(roc_graph):
+def get_datasets_prov(roc_graph):
     qres = roc_graph.query("""
     PREFIX prov:   <http://www.w3.org/ns/prov#>
     PREFIX skos:   <http://www.w3.org/2004/02/skos/core#>
@@ -726,7 +726,7 @@ RULES = [
     },
 ]
 
-def show_datasets(roc_graph, output_path):
+def show_datasets(roc_graph, output_path, show_only = False):
     step_datasets_qry = """
     PREFIX prov:  <http://www.w3.org/ns/prov#>
     PREFIX pplan: <https://vocab.linkeddata.es/p-plan#>
@@ -771,8 +771,12 @@ def show_datasets(roc_graph, output_path):
         
         ds_jsons.append(json_file)
         
-        
         new_graph = Graph()
+        for p, ns in [("prov", PROV), ("schema", SCHEMA), ("skos", SKOS), ("p-plan", PPLAN), 
+                  ("cdifprov", CDIFPROV), ("panet", PANET)]:
+            new_graph.bind(p, ns)
+        
+        
         subj_id = URIRef(json_file)
     
         for p, o in ds_properties:
@@ -782,8 +786,9 @@ def show_datasets(roc_graph, output_path):
         new_graph.add((subj_id, SCHEMA.about, a_ds) )
         # highlight as a creativework?
         new_graph.add((subj_id, RDF.type, SCHEMA.CreativeWork) )
-        
-        new_graph.serialize(destination=save_json, format="json-ld", 
+
+        if not show_only:
+            new_graph.serialize(destination=save_json, format="json-ld", 
                     context= graph_context, auto_compact=True, indent=2)
     
     return ds_jsons
