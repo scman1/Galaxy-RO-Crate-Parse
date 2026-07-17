@@ -368,7 +368,8 @@ def roc_provo(crate_path, out_path, output_file="galaxy_run_prov.ttl"):
         if a_ds['extension'] in data_products:
             g.add((ent_uri, RDF.type, CDIFPROV.DataProduct))
         # placeholder for external file describing the ds in detail:
-        g.add((ent_uri, SCHEMA.subjectOf, URIRef(f"{str(ent_uri)[1:].replace('/','_')}.jsonld")))
+        #g.add((ent_uri, SCHEMA.subjectOf, URIRef(f"{str(ent_uri)[1:].replace('/','_')}.jsonld")))
+        g.add ((ent_uri, RDF.type, SCHEMA.MediaObject))
 
     # Add the missing links to inputs
     for a_job in invoked_jobs:
