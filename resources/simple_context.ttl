@@ -1,0 +1,36 @@
+@prefix cdifxas: <https://worldfair-project.eu/cdif/profiles/provenance/CDIF-4-XAS#> .
+@prefix ex: <http://example.org/data/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+cdifxas:element
+    a owl:DatatypeProperty ;
+    skos:prefLabel "element"@en .
+
+cdifxas:edge
+    a owl:DatatypeProperty ;
+    skos:prefLabel "edge"@en .
+
+cdifxas:sample_name
+    a owl:DatatypeProperty ;
+    skos:prefLabel "sample name"@en .
+
+cdifxas:e0
+    a owl:DatatypeProperty ;
+    skos:prefLabel "e0"@en .
+
+cdifxas:facility
+    a owl:DatatypeProperty ;
+    skos:prefLabel "facility"@en .
+
+cdifxas:beamline
+    a owl:DatatypeProperty ;
+    skos:prefLabel "beamline"@en .
+
+ex:dataset1
+    cdifxas:element "Fe" ;
+    cdifxas:edge "K" ;
+    cdifxas:e0 7117.0 ;
+    cdifxas:facility "APS" ;
+    cdifxas:beamline "GSECARS 13-BM" . 

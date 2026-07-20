@@ -16,6 +16,7 @@ SCHEMA = Namespace("https://schema.org/")
 SKOS = Namespace("http://www.w3.org/2004/02/skos/core#")
 PPLAN = Namespace("https://vocab.linkeddata.es/p-plan#")
 CDIFPROV = Namespace("https://worldfair-project.eu/cdif/profiles/provenance/CDIF-PROV#")
+CDIF4XAS = Namespace("https://worldfair-project.eu/cdif/profiles/provenance/CDIF-4-XAS#")
 PANET = Namespace("http://purl.org/pan-science/PaNET/")
 SOSTDP = Namespace("http://sweetontology.net/propOrdinal/ProcessingLevel/")
 EX = Namespace("http://example.org#")
@@ -320,7 +321,8 @@ def roc_provo(crate_path, out_path, output_file="galaxy_run_prov.ttl"):
 
     # define namespaces in graph
     for p, ns in [("prov", PROV), ("schema", SCHEMA), ("skos", SKOS), ("p-plan", PPLAN), 
-                  ("cdifprov", CDIFPROV), ("panet", PANET), ("sostdp", SOSTDP), ("ex", EX)]:
+                  ("cdifprov", CDIFPROV), ("cdif4xas", CDIF4XAS), ("panet", PANET),
+                  ("sostdp", SOSTDP), ("ex", EX)]:
         g.bind(p, ns)
 
     base = "/"
@@ -449,7 +451,8 @@ def roc_provo(crate_path, out_path, output_file="galaxy_run_prov.ttl"):
             "skos": str(SKOS),
             "rdfs": str(RDFS),
             "dcterms": str(DCTERMS),
-            "cdifprov": str(CDIFPROV)
+            "cdifprov": str(CDIFPROV),
+            "cdif4xas": str(CDIF4XAS)
         }
     save_json = Path(out_path, output_file[:-4]+".jsonld")
     g.serialize(destination=save_json, format="json-ld", publicID="local:",
@@ -711,6 +714,23 @@ def add_processing_level(ds_id, ds_details, a_graph):
         if rule["when"](context):
             add_sweet_pl(ds_details, *rule["add"])
     return ds_details
+
+def get_ancestry(ds_id, graph):    
+    generated_by = [o for o in graph.objects(ds_id, PROV.wasGeneratedBy)]
+    for an_action in generated_by:
+        inputs = [s for s in graph.objects(an_action, PROV.used)]
+    return {"generated_by": generated_by,
+        "inputs": inputs}
+
+def add_ancestor(ds_id, ds_details, a_graph):
+    ancestry = get_ancestry(ds_id, a_graph)
+    #print ("Ancestry: ", ancestry)
+    #print ("Just inputs:", ancestry["inputs"])
+    for an_input in ancestry["inputs"]:
+        #a_graph.add((ds_id, PROV.wasDerivedFrom, an_input))
+        ds_details.append((PROV.wasDerivedFrom, an_input))
+    #        add_panet(ds_details, *rule["add"])
+    return ds_details
     
 PANET_RULES = [
     # CIF or input => crystallography OK
@@ -846,6 +866,7 @@ def show_datasets(roc_graph, output_path, show_only = False):
         ds_properties = get_dataset_properties(a_ds,roc_graph)
         ds_properties = add_panet_class(a_ds, ds_properties, roc_graph)
         ds_properties = add_processing_level(a_ds, ds_properties, roc_graph)
+        ds_properties = add_ancestor(a_ds, ds_properties, roc_graph)
         ds_label = get_a_label(roc_graph, a_ds)
         props_df = get_ds_dataframe(ds_properties, roc_graph)
         display(HTML(f"<h3>{ds_label} Properties ({a_ds})</h3>") )
@@ -859,6 +880,7 @@ def show_datasets(roc_graph, output_path, show_only = False):
             "dcterms": str(DCTERMS),
             "panet": str(PANET),
             "cdifprov": str(CDIFPROV),
+            "cdif4xaz": str(CDIF4XAS),
             "sostdp": str(SOSTDP),
             "ex": str(EX)
         }
@@ -870,7 +892,8 @@ def show_datasets(roc_graph, output_path, show_only = False):
         
         new_graph = Graph()
         for p, ns in [("prov", PROV), ("schema", SCHEMA), ("skos", SKOS), ("p-plan", PPLAN), 
-                  ("cdifprov", CDIFPROV), ("panet", PANET), ("sostdp", SOSTDP), ("ex", EX) ]:
+                      ("cdifprov", CDIFPROV), ("cdif4xas", CDIF4XAS), ("panet", PANET), 
+                      ("sostdp", SOSTDP), ("ex", EX) ]:
             new_graph.bind(p, ns)
         
         

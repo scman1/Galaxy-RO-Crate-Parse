@@ -6,3 +6,4 @@ nx.html
 /__pycache__
 /resources/.ipynb_checkpoints
 /result_roc
+resources/NeXusOntology.owl

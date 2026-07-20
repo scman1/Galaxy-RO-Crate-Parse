@@ -1,0 +1,54 @@
+# nexus format ontology
+@prefix nxfo: <http://purl.org/nexusformat/definitions/NeXusOntology#> .
+# iupac goldbook
+@prefix iupacgb: <https://goldbook.iupac.org/terms/view/> .
+# iucr dictionary
+@ prefix iucrdic: <https://dictionary.iucr.org/> .
+# general ontologies
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+# custom terms - local ontology
+@prefix ex: <http://example.org/data/> .
+
+
+iupacgb:C01022
+    skos:prefLabel "Chemical Element"@en ;
+    dcterms:description "A species of atoms; all atoms with the same number of protons in the atomic nucleus."@en ;
+    dcterms:description "A pure chemical substance composed of atoms with the same number of protons in the atomic nucleus. Sometimes this concept is called the elementary substance as distinct from the chemical element, but mostly the term chemical element is used for both concepts."@en.
+
+iucrdic:absorption_edge
+    skos:prefLabel "X-ray absorption edge" ;
+    dcterms:description "An absorption edge is the energy at which there is a sharp rise (discontinuity) in the (linear) absorption coefficient of X-rays by an element, which occurs when the energy of the photon corresponds to the energy of a shell of the atom (K, LI, LII, LIII, etc. corresponding to the creation of electron holes in the 1s, 2s, 2p1/2, 2p3/2 etc. atomic subshells). "@en .
+
+
+nxfo:element
+    a owl:ObjectProperty ;
+    rdfs:range nxfo:Element .
+
+nxfo:Element
+    a owl:Class ;
+    skos:closeMatch iupacgb:C01022 
+
+
+nxfo:element
+    a owl:ObjectProperty ;
+    skos:prefLabel "element"@en ;
+    skos:closeMatch iupacgb:C01022 .
+
+nxfo:edge
+    a owl:ObjectProperty ;
+    skos:prefLabel "edge"@en ;
+    skos:closeMatch iucrdic:absorption_edge .
+
+
+
+nxfo:Fe
+    a nxfo:element ;
+    skos:prefLabel "Iron"@en ;
+    nxfo:symbol "Fe" .
+
+ex:experiment
+    nxfo:element nxfo:Fe .
+
