@@ -27,6 +27,7 @@ file_formats = {"txt":"text/plain", "cif": "chemical/x-cif",
                 "feff":"text/csv", "zip":"application/zip",
                 "inp":"chemical/x-feff-input",
                 "tabular": "text/plain",
+                "xdi": "application/xdi",
                 "h5": "application/x-hdf5",
                 "nexus": "application/nexus",
                 "jsonld": "application/ld+json"
