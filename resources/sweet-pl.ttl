@@ -4,8 +4,6 @@
 @prefix ex: <http://example.org#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-
-
 ex:Level0 
     skos:prefLabel "Raw"@en ;
     dcterms:description "Reconstructed, unprocessed instrument and payload data at full resolution, with any and all communications artifacts (e.g. noise, fluorescence)"@en .
