@@ -16,7 +16,7 @@ SCHEMA = Namespace("https://schema.org/")
 SKOS = Namespace("http://www.w3.org/2004/02/skos/core#")
 PPLAN = Namespace("https://vocab.linkeddata.es/p-plan#")
 CDIFPROV = Namespace("https://worldfair-project.eu/cdif/profiles/provenance/CDIF-PROV#")
-CDIF4XAS = Namespace("https://worldfair-project.eu/cdif/profiles/provenance/CDIF-4-XAS#")
+CDIF4XAS = Namespace("https://worldfair-project.eu/cdif/profiles/cdif4xas/CDIF-4-XAS#")
 PANET = Namespace("http://purl.org/pan-science/PaNET/")
 SOSTDP = Namespace("http://sweetontology.net/propOrdinal/ProcessingLevel/")
 EX = Namespace("http://example.org#")
@@ -1014,6 +1014,13 @@ def show_datasets(roc_graph, roc_path, output_path="", show_only = False):
             "sostdp": str(SOSTDP),
             "ex": str(EX)
         }
+        
+        new_graph = Graph()
+        for p, ns in [("prov", PROV), ("schema", SCHEMA), ("skos", SKOS), ("p-plan", PPLAN), 
+                      ("cdifprov", CDIFPROV), ("cdif4xas", CDIF4XAS), ("panet", PANET), 
+                      ("sostdp", SOSTDP), ("ex", EX) ]:
+            new_graph.bind(p, ns)
+        
         #print(str(step), str(dataset), str(activity))
         ds_properties = get_dataset_properties(a_ds,roc_graph)
         ds_properties = add_panet_class(a_ds, ds_properties, roc_graph)
@@ -1025,19 +1032,10 @@ def show_datasets(roc_graph, roc_path, output_path="", show_only = False):
         display(HTML(f"<h3>{ds_label} Properties ({a_ds})</h3>") )
         display(HTML(props_df.to_html().replace("\\n","<br>")))
     
-
-    
         json_file = f"{str(a_ds)[1:].replace('/','_')}.jsonld"
         save_json = Path(output_path, json_file)
         
         ds_jsons.append(json_file)
-        
-        new_graph = Graph()
-        for p, ns in [("prov", PROV), ("schema", SCHEMA), ("skos", SKOS), ("p-plan", PPLAN), 
-                      ("cdifprov", CDIFPROV), ("cdif4xas", CDIF4XAS), ("panet", PANET), 
-                      ("sostdp", SOSTDP), ("ex", EX) ]:
-            new_graph.bind(p, ns)
-        
         
         subj_id = URIRef(json_file)
     
