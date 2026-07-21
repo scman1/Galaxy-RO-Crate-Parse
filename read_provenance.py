@@ -729,7 +729,7 @@ def add_ancestor(ds_id, ds_details, a_graph):
     #print ("Just inputs:", ancestry["inputs"])
     for an_input in ancestry["inputs"]:
         #a_graph.add((ds_id, PROV.wasDerivedFrom, an_input))
-        ds_details.append((PROV.wasDerivedFrom, an_input))
+        ds_details.append([PROV.wasDerivedFrom, an_input])
     #        add_panet(ds_details, *rule["add"])
     return ds_details
     
@@ -841,7 +841,146 @@ SOSTDP_RULES = [
 ]
 
 
-def show_datasets(roc_graph, output_path, show_only = False):
+def get_ancestors(graph, entity):
+    seen = set()
+    stack = [entity]
+    while stack:
+        current = stack.pop()
+        for activity in graph.objects(current, PROV.wasGeneratedBy):
+            for parent in graph.objects(activity, PROV.used):
+                if parent not in seen:
+                    seen.add(parent)
+                    stack.append(parent)
+    return seen
+
+def get_descendants(graph, entity):
+    seen = set()
+    stack = [entity]
+    while stack:
+        current = stack.pop()
+        for activity in graph.subjects(PROV.used, current):
+            for child in graph.subjects(
+                PROV.wasGeneratedBy,
+                activity
+            ):
+                if child not in seen:
+                    seen.add(child)
+                    stack.append(child)
+    return seen
+
+def get_full_ancestry(a_graph, an_entity):
+    all_ancestors = get_ancestors(a_graph, an_entity)
+    all_descendants = get_descendants(a_graph, an_entity)
+    return {"entity": an_entity, "ancestors": all_ancestors, "descendants": all_descendants}
+
+def get_values_custom_xmu_textfile(file_path, filename):
+    f = get_file_from_rocratezip(file_path, filename)
+    return_dict = {}
+    for line in f:
+        text = line.decode('utf-8')
+        if text[0] == "#":
+            if "#%name:" in text: 
+                #print(f"name: {text[7:].strip()}")
+                return_dict["sample_name"] = text[7:].strip()
+            elif "#%atom:" in text: 
+                #print(f"Sample: {text[7:].strip()}")
+                return_dict["sample_formula"] = text[7:].strip()
+            elif "#%edge:" in str(line): 
+                #print(f"Edge: {text[7:].strip()}")
+                return_dict["edge"] = text[7:].strip()
+            elif "#%temp:" in str(line): 
+                #print(f"Temperature: {text[7:].strip()}")
+                return_dict["temperature"] = text[7:].strip()
+            elif "#%beam:" in str(line): 
+                #print(f"Beamline: {text[7:].strip()}")
+                return_dict["beamline"] = text[7:].strip()
+        else:
+          break
+    return return_dict
+
+def get_entity_type(graph_thing, an_entity):
+    for a_type in graph_thing.objects(an_entity, DCTERMS.format):
+        return a_type
+
+def get_entity_path(graph_thing, an_entity):
+    for a_path in graph_thing.objects(an_entity, SCHEMA.id):
+        return a_path
+
+def get_entity_description(graph_thing, an_entity):
+    for a_desc in graph_thing.objects(an_entity, DCTERMS.description):
+        return a_desc
+
+def get_entity_metadata(roc_path, graph_thing, an_entity):
+    a_type = str(get_entity_type(graph_thing, an_entity))
+    
+    vals_entity = {}
+    
+    # text types
+    if a_type in ["text/plain", "chemical/x-cif", 
+                  "text/csv", "application/xdi"]:
+        filename = str(get_entity_path(graph_thing, an_entity))
+        #print (get_a_label(graph_thing, an_entity)[-4:])
+        if get_a_label(graph_thing, an_entity)[-4:] == ".xmu":
+        #    print("getting xmu metadata")
+            vals_entity = get_values_custom_xmu_textfile(roc_path, filename)
+        # need other methods for xdi and dat files from different beamlines
+    elif a_type in ["application/vnd.demeter.athena"]:
+        # athena project files
+        entity_desc = get_entity_description(graph_thing, an_entity)
+        vals_entity = get_values_athena_project(entity_desc)
+    return vals_entity
+
+def get_values_athena_project(athena_descr):
+    athena_split = athena_descr.split("\n")
+    return_dict = {}
+    for a_line in athena_split:
+        [k,v] = a_line.split(": ")
+        if k == "atsym":
+             k =  "element"
+        elif k == 'bkg_e0':
+            k = "e0"
+        elif k == 'npts':
+            k = "points"
+        elif k == 'xmax':
+            k = 'energy_max'
+        elif k == 'xmin':
+            k = 'energy_min'
+        return_dict[k] = v 
+    return return_dict
+
+def add_cdif_metadata(an_entity, ds_properties, roc_graph, a_file_path):
+    
+    #print (get_a_label(roc_graph, an_entity), '->')
+    entity_ancestry = get_full_ancestry(roc_graph, an_entity)
+    branch_metadata = {}
+    branch_metadata[entity_ancestry["entity"]] = get_entity_metadata(a_file_path, roc_graph, entity_ancestry["entity"])
+    
+    for an_ancestor in entity_ancestry["ancestors"]:
+        branch_metadata[an_ancestor] = get_entity_metadata(a_file_path, roc_graph, an_ancestor)
+    
+    for a_descendant in entity_ancestry["descendants"]:
+        branch_metadata[a_descendant] = get_entity_metadata(a_file_path, roc_graph, a_descendant)
+    
+    # for the first case is OK to join them all
+    
+    sinlge_metadata = {}
+    
+    for an_entity in branch_metadata:
+        if branch_metadata[an_entity] != {}:
+            sinlge_metadata = sinlge_metadata|branch_metadata[an_entity]
+    
+    # actual metadata pairs
+    branch_prov_metadata = [] 
+    for a_key in sinlge_metadata:
+            if a_key in ["element", "e0", "edge", "sample_name", 
+                         "sample_formula", "beamline"]:
+                pred = CDIF4XAS[a_key]
+                branch_prov_metadata.append([pred, Literal(sinlge_metadata[a_key])])
+    
+    ds_properties += branch_prov_metadata
+    return ds_properties
+
+def show_datasets(roc_graph, roc_path, output_path="", show_only = False):
     step_datasets_qry = """
     PREFIX prov:  <http://www.w3.org/ns/prov#>
     PREFIX pplan: <https://vocab.linkeddata.es/p-plan#>
@@ -863,16 +1002,6 @@ def show_datasets(roc_graph, output_path, show_only = False):
     ds_jsons=[]
     
     for step, a_ds, activity,  in qres:
-        #print(str(step), str(dataset), str(activity))
-        ds_properties = get_dataset_properties(a_ds,roc_graph)
-        ds_properties = add_panet_class(a_ds, ds_properties, roc_graph)
-        ds_properties = add_processing_level(a_ds, ds_properties, roc_graph)
-        ds_properties = add_ancestor(a_ds, ds_properties, roc_graph)
-        ds_label = get_a_label(roc_graph, a_ds)
-        props_df = get_ds_dataframe(ds_properties, roc_graph)
-        display(HTML(f"<h3>{ds_label} Properties ({a_ds})</h3>") )
-        display(HTML(props_df.to_html().replace("\\n","<br>")))
-    
         graph_context={
             "prov": str(PROV),
             "schema": str(SCHEMA),
@@ -881,10 +1010,22 @@ def show_datasets(roc_graph, output_path, show_only = False):
             "dcterms": str(DCTERMS),
             "panet": str(PANET),
             "cdifprov": str(CDIFPROV),
-            "cdif4xaz": str(CDIF4XAS),
+            "cdif4xas": str(CDIF4XAS),
             "sostdp": str(SOSTDP),
             "ex": str(EX)
         }
+        #print(str(step), str(dataset), str(activity))
+        ds_properties = get_dataset_properties(a_ds,roc_graph)
+        ds_properties = add_panet_class(a_ds, ds_properties, roc_graph)
+        ds_properties = add_processing_level(a_ds, ds_properties, roc_graph)
+        ds_properties = add_ancestor(a_ds, ds_properties, roc_graph)
+        ds_properties = add_cdif_metadata(a_ds, ds_properties, roc_graph, roc_path)
+        ds_label = get_a_label(roc_graph, a_ds)
+        props_df = get_ds_dataframe(ds_properties, roc_graph)
+        display(HTML(f"<h3>{ds_label} Properties ({a_ds})</h3>") )
+        display(HTML(props_df.to_html().replace("\\n","<br>")))
+    
+
     
         json_file = f"{str(a_ds)[1:].replace('/','_')}.jsonld"
         save_json = Path(output_path, json_file)
