@@ -840,6 +840,26 @@ SOSTDP_RULES = [
     },
 ]
 
+def get_roc_provenance(roc_file):
+    roc_graph = Graph()
+    f = get_file_from_rocratezip(roc_file, "provenance/galaxy_run_prov.jsonld")
+    json_roc = json.load(f)
+    roc_graph.parse(
+        data=json.dumps(json_roc),
+        format="json-ld",publicID="/"
+    )
+    roc_graph = fix_graph_root(roc_graph)
+    return roc_graph
+    
+def fix_graph_root(a_graph):
+    new_graph = Graph()  
+    for s, p, o in a_graph:    
+        if isinstance(s, URIRef) and str(s).startswith("file:///"):
+            s = URIRef(str(s).replace("file://", "", 1))
+        if isinstance(o, URIRef) and str(o).startswith("file:///"):
+            o = URIRef(str(o).replace("file://", "", 1))
+        new_graph.add((s, p, o))
+    return new_graph
 
 def get_ancestors(graph, entity):
     seen = set()
