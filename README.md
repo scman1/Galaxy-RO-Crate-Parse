@@ -9,8 +9,8 @@ The three notebooks included are intended to show:
 Most of the processing (extracting provenance and modifying RO-Crate) is stored in read_provenance.py, the functions to process data are in lin/larch_data_reader.py, while the plotting functions are in lib/custom_plots.py
 
 # Funding
+This work has been supported came from the following sources.
 
-The UK Catalysis Hub funded the development of this resource through EPSRC grants: EP/R026939/1, EP/R026815/1, EP/R026645/1, EP/R027129/1, and EP/M013219/1(biocatalysis).
-
-Additional the collaboration in the Phycal Sciences Data Infrastructure (PSDI project)
-has also provided funding through EPSRC grants: EP/X032701/1, EP/X032663/1, and EP/W032252/1
+- UK Catalysis Hub is kindly thanked for resources and support provided via our membership of the UK Catalysis Hub Consortium and funded by EPSRC grant: UKRI945. 
+- Additional the collaboration in the Physical Sciences Data Infrastructure (PSDI project) has also provided funding through EPSRC grants: EP/X032701/1, EP/X032663/1, and EP/W032252/1.
+- This project also received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No 101129751 Open Science Clusters’ Action for Research and Society (OSCARS)-CDIF-4-XAS. 
