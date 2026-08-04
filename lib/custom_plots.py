@@ -139,4 +139,80 @@ def plot_chi_magnitude(athena_groups = {}, include_groups = {}, aspect = (6,8), 
     plt.show()
 
     return plt
+
+"""
+=============================================
+Generate polygons to fill under 3D line graph
+=============================================
+
+Demonstrate how to create polygons which fill the space under a line
+graph. In this example polygons are semi-transparent, creating a sort
+of 'jagged stained glass' effect.
+"""
+
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.collections import PolyCollection
+import matplotlib.patches as mpatches
+from matplotlib import colors as mcolors
+import numpy as np
+
+#plt.figure(figsize=(12,10))
+
+
+
+# create see through colours
+def cc(arg):
+    return mcolors.to_rgba(arg, alpha=0.6)
+
+def plot_normal_3db(groups = [], xlims=[19970, 20150]):
+    fig = plt.figure(figsize=(12,12))
+    ax = fig.add_subplot(projection = '3d')
+    ax.view_init(elev=25., azim=-120)
     
+    verts = []
+    zs = np.arange(1, len(groups)+1, 1)
+    for a_group in groups:
+
+        x1_idx = np.abs(a_group.energy - xlims[0]).argmin()
+        x2_idx = np.abs(a_group.energy - xlims[1]).argmin()
+        
+        ys = a_group.norm[x1_idx:x2_idx]
+        # make first and last values of y [0,0] 
+        # so the fill is always under the curve
+        ys[0], ys[-1] = 0, 0
+        xs =a_group.energy[x1_idx:x2_idx]
+        verts.append(list(zip(xs, ys)))
+
+    poly = PolyCollection(verts, facecolors=[cc('w'), cc('w'), cc('w'), cc('w')], 
+                          edgecolors= ['black'])
+    
+    transp_val = 1.0
+    
+    norm = plt.Normalize(vmin=zs.min().min(), vmax=zs.max().max())
+    
+    x_colours  = plt.cm.plasma(norm(zs))
+    
+    colour_dict ={}
+    for group, colour in zip(groups, x_colours):
+        colour_dict[group.filename] = colour  
+    
+    poly = PolyCollection(verts,facecolors=x_colours,
+                          edgecolors= ['black'])
+    poly.set_alpha(transp_val)
+    
+    # add lengends
+    colour_patches = []
+    for group, colour in zip(groups, x_colours):
+        colour_patches.append(mpatches.Patch(color=colour, label=group.filename, alpha=transp_val))  
+    
+    ax.legend(handles=colour_patches, loc="upper right")
+    
+    ax.add_collection3d(poly, zs=zs, zdir='y')
+
+    ax.set_xlabel('Energy (eV)')
+    ax.set_xlim3d(19960, 20150)
+    #ax.set_ylabel('groups')
+    ax.set_ylim3d(len(groups),0)
+    ax.set_zlabel('Normalized $\mu$(E)')
+    ax.set_zlim3d(0, 1.2)
+    return plt 
